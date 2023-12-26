@@ -1,0 +1,8 @@
+**venv
+**.idea
+**__pycache__
+**.mypy_cache
+**.ruff_cache
+.gitignore
+example.env
+**.git

@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "reddcbot"
+version = "0.1.0"
+description = "Bot, that pars Reddit"
+authors = ["CBoYXD <python.rust.cpp@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+aiogram = "^3.2.0"
+environs = "^10.0.0"
+betterlogging = "^0.2.1"
+aiofiles = "^23.2.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
