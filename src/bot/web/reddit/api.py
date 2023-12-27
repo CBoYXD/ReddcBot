@@ -76,7 +76,7 @@ class RedditAPI:
         self,
         subreddits: tuple[
             tuple[str, Optional[str]]
-        ],  # tuple((name, id), (name, id) ...)
+        ],  # tuple((name, id), (name, id), ...)
         limit: int = 9,
         post_type: str = "new",
     ) -> list[Post]:
