@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from datetime import datetime, timedelta
 
 from aiogram.utils.formatting import Bold, HashTag, TextLink
 
@@ -27,7 +28,26 @@ class Post:
     media_only: bool
     over_18: bool
 
+    def __convert_time(self, time_delta: timedelta):
+        seconds = round(time_delta.total_seconds())
+        minutes = round(seconds / 60)
+        hours = round(seconds / 3600)
+        days = round(seconds / 86400)
+        if days != 0:
+            return f"{days} days ago"
+        if hours != 0:
+            if minutes != 0:
+                return f"{hours} hours and {round(minutes%60)} minutes ago"
+            else:
+                return f"{hours} hours ago"
+        if minutes != 0:
+            if seconds != 0:
+                return f"{minutes} minutes and {round(seconds%60)} seconds ago"
+            else:
+                return f"{seconds} seconds ago"
+
     def __str__(self) -> str:
+        from_time_stamp = datetime.fromtimestamp(self.created_at)
         over_18 = (
             ""
             if self.over_18 is False
@@ -43,6 +63,12 @@ class Post:
             + Bold(f"📱 Media Only 📱: {self.media_only}\n\n").as_html()
             + Bold(f"🎥 Video 🎥: {self.is_video}\n\n").as_html()
             + over_18
+            + Bold(
+                "Created at: {created_at} ({time_ago})\n\n".format(
+                    created_at=from_time_stamp,
+                    time_ago=self.__convert_time(datetime.utcnow() - from_time_stamp),
+                )
+            ).as_html()
             + HashTag(self.subreddit.tag).as_html()
             + ", "
             + HashTag("#" + self.subreddit.id).as_html()
