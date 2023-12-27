@@ -96,7 +96,7 @@ class RedditAPI:
                 else:
                     return False
 
-    async def check_subreddits(self, subreddits: list | tuple) -> bool:
+    async def check_subreddits(self, subreddits: list | tuple) -> tuple[str, bool]:
         return [
             (subreddit, await self.check_subreddit(subreddit))
             for subreddit in subreddits
