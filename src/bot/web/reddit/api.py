@@ -86,3 +86,18 @@ class RedditAPI:
             await self.get_posts(subreddit[0], limit, post_type, subreddit[1])
             for subreddit in subreddits
         ]
+
+    async def check_subreddit(self, subreddit: str) -> bool:
+        async with aiohttp.ClientSession() as ses:
+            async with ses.get(f"https://www.reddit.com/r/{subreddit}.json?") as res:
+                json: dict = await res.json()
+                if json.get("error") is None:
+                    return True
+                else:
+                    return False
+
+    async def check_subreddits(self, subreddits: list | tuple) -> bool:
+        return [
+            (subreddit, await self.check_subreddit(subreddit))
+            for subreddit in subreddits
+        ]

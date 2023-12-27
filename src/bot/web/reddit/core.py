@@ -31,7 +31,3 @@ class Post:
 
 class RedditAPIException(Exception):
     pass
-
-
-async def check_subreddits(subreddits: list[str]):
-    ...
