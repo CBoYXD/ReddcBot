@@ -30,19 +30,19 @@ class Post:
 
     def __convert_time(self, time_delta: timedelta):
         seconds = round(time_delta.total_seconds())
-        minutes = round(seconds / 60)
-        hours = round(seconds / 3600)
-        days = round(seconds / 86400)
+        minutes = seconds // 60
+        hours = minutes // 60
+        days = hours // 24
         if days != 0:
             return f"{days} days ago"
         if hours != 0:
             if minutes != 0:
-                return f"{hours} hours and {round(minutes%60)} minutes ago"
+                return f"{hours} hours and {minutes-(hours*60)} minutes ago"
             else:
                 return f"{hours} hours ago"
         if minutes != 0:
             if seconds != 0:
-                return f"{minutes} minutes and {round(seconds%60)} seconds ago"
+                return f"{minutes} minutes and {seconds - (seconds*60)} seconds ago"
             else:
                 return f"{seconds} seconds ago"
 
