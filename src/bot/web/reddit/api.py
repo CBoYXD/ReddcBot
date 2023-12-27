@@ -5,9 +5,6 @@ from core import Post, RedditAPIException, SubReddit
 
 
 class RedditAPI:
-    def __init__(self) -> None:
-        self.subreddit_link = "https://www.reddit.com/r/{subreddit}/{post_type}.json?"
-
     def __util_get_posts(
         self,
         user_posts: list[dict[str, Any]],
@@ -52,14 +49,14 @@ class RedditAPI:
     ) -> list[Post]:
         if post_type not in ("new", "hot", "top", "rising"):
             raise RedditAPIException("Wrong param post_type")
-        link = self.subreddit_link.format(subreddit=subreddit, post_type=post_type)
+        link = f"https://www.reddit.com/r/{subreddit}/{post_type}.json?"
         async with aiohttp.ClientSession() as ses:
             async with ses.get(link) as res:
                 json = await res.json()
                 reddit_posts = [post["data"] for post in json["data"]["children"]]
                 if not id:
                     return self.__util_get_posts(
-                        user_posts=reddit_posts[:limit - 1],
+                        user_posts=reddit_posts[: limit - 1],
                         subreddit=subreddit,
                         link=link,
                         post_type=post_type,
