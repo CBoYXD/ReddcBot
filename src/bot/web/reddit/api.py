@@ -1,7 +1,8 @@
 from typing import Any, Optional
 
 import aiohttp
-from core import Post, RedditAPIException, SubReddit
+
+from .core import Post, RedditAPIException, SubReddit
 
 
 class RedditAPI:
@@ -16,18 +17,16 @@ class RedditAPI:
         for post in user_posts:
             posts.append(
                 Post(
-                    link=link,
+                    link=f"https://www.reddit.com{post['permalink']}",
                     id=post["id"],
                     title=post["title"],
                     author=post["author"],
                     post_type=post_type,
-                    topic=None,
                     subreddit=SubReddit(
                         name=subreddit,
                         id=post["subreddit_id"],
                         subscribers=post["subreddit_subscribers"],
                         tag="#" + subreddit,
-                        reddit_tag="#" + "r/" + subreddit,
                     ),
                     created_at=post["created_utc"],
                     upvote_ratio=post["upvote_ratio"],
@@ -101,3 +100,6 @@ class RedditAPI:
             (subreddit, await self.check_subreddit(subreddit))
             for subreddit in subreddits
         ]
+
+    def __str__(self) -> str:  # for tests
+        return "Reddit API Object"
