@@ -64,7 +64,7 @@ class Post:
             + Bold(f"🎥 Video 🎥: {self.is_video}\n\n").as_html()
             + over_18
             + Bold(
-                "Created at: {created_at} ({time_ago})\n\n".format(
+                "⏳Created at⏳: {created_at} ({time_ago})\n\n".format(
                     created_at=from_time_stamp,
                     time_ago=self.__convert_time(datetime.utcnow() - from_time_stamp),
                 )
