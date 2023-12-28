@@ -12,4 +12,6 @@ admin_router.message.filter(AdminFilter())
 
 @admin_router.message(Command("start"))
 async def admin_msg_start(message: Message, dialog_manager: DialogManager):
-    await dialog_manager.start(AdminState.posts.choose, mode=StartMode.RESET_STACK)
+    await dialog_manager.start(
+        AdminState.posts.choose_network, mode=StartMode.RESET_STACK
+    )
