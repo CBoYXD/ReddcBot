@@ -1,5 +1,6 @@
-import pytest
 import aiohttp
+import pytest
+
 from src.web.reddit.api import RedditAPI
 from src.web.reddit.core import Post, PostType
 

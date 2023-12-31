@@ -4,17 +4,8 @@ from typing import Any, Optional
 from aiohttp import ClientSession
 from aiohttp.client_exceptions import ContentTypeError
 
-from .core import (
-    LinkType,
-    Post,
-    PostType,
-    RedditAPIException,
-    Redditor,
-    SearchType,
-    Sort,
-    SubReddit,
-    Time,
-)
+from .core import (LinkType, Post, PostType, RedditAPIException, Redditor,
+                   SearchType, Sort, SubReddit, Time)
 
 
 class RedditAPI:
@@ -140,9 +131,7 @@ class RedditAPI:
                 raise RedditAPIException("Request to reddit.com return error ...")
         return deviation
 
-    async def check_subreddit(
-        self, subreddit: str, session: ClientSession
-    ) -> bool:
+    async def check_subreddit(self, subreddit: str, session: ClientSession) -> bool:
         async with session.get(
             f"https://www.reddit.com/r/{subreddit}.json?", allow_redirects=False
         ) as res:
