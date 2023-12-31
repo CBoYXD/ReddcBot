@@ -1,9 +1,9 @@
 from .hacknews import HackerNewsPostClick
-from .lobster import LobsterPostClick
 from .lemmy import LemmyPostClick
+from .lobster import LobsterPostClick
 from .mastodon import MastodonPostClick
-from .yt import YoutubePostClick
 from .reddit import RedditPostClick
+from .yt import YoutubePostClick
 
 
 class PostClick:

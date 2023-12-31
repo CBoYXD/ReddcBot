@@ -1,7 +1,46 @@
 from dataclasses import dataclass
 from datetime import datetime, timedelta
+from enum import Enum
 
 from aiogram.utils.formatting import Bold, HashTag, TextLink
+
+
+class LinkType(Enum):
+    SEARCH = (
+        "https://www.reddit.com/search/.json?"
+        + "q={request}&limit={limit}&type={type}&t={time}&sort={sort}"
+    )
+    GET_POSTS = "https://www.reddit.com/r/{subreddit}/{post_type}/.json?&limit={limit}"
+
+
+class PostType(Enum):
+    NEW = "new"
+    HOT = "hot"
+    TOP = "top"
+    RISING = "rising"
+
+
+class SearchType(Enum):
+    POST = "link"
+    SUBREDDIT = "sr"
+    USER = "user"
+
+
+class Sort(Enum):
+    HOT = "hot"
+    TOP = "top"
+    NEW = "new"
+    REVELANCE = "relevance"
+    MOST_COMMENTS = "comments"
+
+
+class Time(Enum):
+    ALL = "all"
+    PAST_YEAR = "year"
+    PAST_MONTH = "month"
+    PAST_WEEK = "week"
+    PAST_DAY = "day"
+    PAST_HOUR = "hour"
 
 
 @dataclass
