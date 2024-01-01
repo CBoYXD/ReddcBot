@@ -1,11 +1,21 @@
 from datetime import datetime
-from typing import Any, Optional
+from typing import Any, Optional, Union
 
 from aiohttp import ClientSession
 from aiohttp.client_exceptions import ContentTypeError
 
-from .core import (LinkType, Post, PostType, RedditAPIException, Redditor,
-                   SearchType, Sort, SubReddit, Time)
+from .core import (
+    LinkType,
+    Post,
+    PostType,
+    RedditAPIException,
+    Redditor,
+    Result,
+    SearchType,
+    Sort,
+    SubReddit,
+    Time,
+)
 
 
 class RedditAPI:
@@ -29,6 +39,7 @@ class RedditAPI:
                     verified=redditor["verified"],
                 )
             )
+        return sort_redditors
 
     def __tool_get_subreddits(
         self, user_subreddits: list[dict[str, Any]]
@@ -41,23 +52,22 @@ class RedditAPI:
                     name=name,
                     link=f"https://www.reddit.com/r/{name}",
                     title=subreddit["title"],
-                    lang=subreddit["lang"],
+                    language=subreddit["lang"],
                     id=subreddit["id"],
                     type=subreddit["subreddit_type"],
                     over_18=subreddit["over18"],
-                    created_at=datetime.fromtimestamp(subreddit["created_utc"]),
+                    created_utc=datetime.fromtimestamp(subreddit["created_utc"]),
                 )
             )
+        return sort_subreddits
 
     def __tool_get_posts(
-        self,
-        user_posts: list[dict[str, Any]],
-        subreddit: Optional[str] = None,
-        post_type: Optional[str] = None,
+        self, user_posts: list[dict[str, Any]], **kwargs
     ) -> list[Post]:
-        subreddit = subreddit if not None else user_posts["subreddit"]
         posts = []
+        post_type: Optional[PostType] = kwargs.get("post_type")
         for post in user_posts:
+            subreddit: str = kwargs.get("subreddit") if not None else post["subreddit"]
             posts.append(
                 Post(
                     link=f"https://www.reddit.com{post['permalink']}",
@@ -69,7 +79,7 @@ class RedditAPI:
                     subreddit_id=post["subreddit_id"],
                     subreddit_subscribers=post["subreddit_subscribers"],
                     subreddit_tag="#" + subreddit,
-                    created_at=datetime.fromtimestamp(post["created_utc"]),
+                    created_utc=datetime.fromtimestamp(post["created_utc"]),
                     upvote_ratio=post["upvote_ratio"],
                     comments_num=post["num_comments"],
                     score=post["score"],
@@ -146,7 +156,7 @@ class RedditAPI:
 
     async def get_posts(
         self, subreddit: str, post_type: PostType = PostType.NEW, **kwargs
-    ) -> list[Post]:
+    ) -> Union[Result[Optional[list[Post]]]]:
         if not isinstance(post_type, PostType):
             raise RedditAPIException("Wrong param post_type")
         limit = kwargs.get("limit")
@@ -160,12 +170,14 @@ class RedditAPI:
                 subreddit=subreddit,
                 post_type=post_type,
             )
+            limit_change = False
             if limit is None:
                 pass
             elif deviation >= 0:
                 limit = limit - deviation
             else:
                 limit = 100 + deviation
+                limit_change = True
             async with ses.get(
                 "{link}r/{subreddit}/{post_type}.json?&limit={limit}".format(
                     link="https://www.reddit.com/",
@@ -179,31 +191,35 @@ class RedditAPI:
                     reddit_posts = [post["data"] for post in json["data"]["children"]]
                     post_id = kwargs.get("post_id")
                     if not post_id:
-                        return self.__tool_get_posts(
-                            user_posts=reddit_posts,
-                            subreddit=subreddit,
-                            post_type=post_type.value,
+                        return Result[list[Post]].init(
+                            self.__tool_get_posts(
+                                user_posts=reddit_posts,
+                                subreddit=subreddit,
+                                post_type=post_type,
+                            ),
+                            limit_change=limit_change,
                         )
                     else:
                         for post in reddit_posts:
                             if post["id"] == post_id:
                                 index = reddit_posts.index(post)
-                        return self.__tool_get_posts(
-                            user_posts=reddit_posts[:index],
-                            subreddit=subreddit,
-                            post_type=post_type.value,
+                        return Result[list[Post]].init(
+                            self.__tool_get_posts(
+                                user_posts=reddit_posts[:index],
+                                subreddit=subreddit,
+                                post_type=post_type,
+                            ),
+                            limit_change=limit_change,
                         )
                 else:
-                    raise RedditAPIException("Request to reddit.com return error ...")
+                    return Result[None].init(None)
 
     async def search_request(
         self, request: str, search_type: SearchType = SearchType.POST, **kwargs
-    ) -> list[Post | SubReddit | Redditor] | None:
+    ) -> Result[Optional[list[Union[Post, Union[SubReddit, Redditor]]]]]:
         if not isinstance(search_type, SearchType):
             raise RedditAPIException("Wrong search_type param")
         limit = kwargs.get("limit")
-        if limit is not None and (0 > limit or limit > 100):
-            raise RedditAPIException("Param limit can only be from 0 to 100 inclusive")
         sort_type = kwargs.get("sort_type")
         time = kwargs.get("time")
         if search_type == SearchType.POST and (
@@ -211,6 +227,22 @@ class RedditAPI:
         ):
             raise RedditAPIException("Wrong sort_type for search_type 'link'")
         async with ClientSession() as ses:
+            deviation = await self.__tool_get_deviation(
+                link_type=LinkType.SEARCH,
+                session=ses,
+                request=request,
+                search_type=search_type,
+                sort_type=sort_type,
+                time=time,
+            )
+            limit_change = False
+            if limit is None:
+                pass
+            elif deviation >= 0:
+                limit = limit - deviation
+            else:
+                limit = 100 + deviation
+                limit_change = True
             async with ses.get(
                 "{link}q={request}&limit={limit}&type={type}&sort={sort}&t={time}".format(
                     link="https://www.reddit.com/search/.json?",
@@ -225,17 +257,26 @@ class RedditAPI:
                 if json.get("error") is None:
                     data = [post["data"] for post in json["data"]["children"]]
                     if search_type == SearchType.POST:
-                        return self.__tool_get_posts(
-                            user_posts=data,
-                            post_type=sort_type,
+                        return Result[list[Post]].init(
+                            self.__tool_get_posts(
+                                user_posts=data,
+                                post_type=sort_type,
+                            ),
+                            limit_change=limit_change,
                         )
                     elif search_type == SearchType.SUBREDDIT:
-                        return self.__tool_get_subreddits(user_subreddits=data)
+                        return Result[list[SubReddit]].init(
+                            self.__tool_get_subreddits(user_subreddits=data),
+                            limit_change=limit_change,
+                        )
                     else:
-                        return self.__tool_get_redditors(user_redditors=data)
+                        return Result[list[Redditor]].init(
+                            self.__tool_get_redditors(user_redditors=data),
+                            limit_change=limit_change,
+                        )
 
                 else:
-                    return None
+                    return Result[None].init(None)
 
     def __str__(self) -> str:  # for tests
         return "Reddit API Object"

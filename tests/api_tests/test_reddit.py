@@ -19,9 +19,10 @@ class TestRedditAPI:
         data = await self.api.get_posts(
             self.subreddits[0], self.post_type, limit=self.limit
         )
+        data = data.data
         assert len(data) == self.limit
         for post in data:
-            assert post.post_type == self.post_type.value
+            assert post.post_type.value == self.post_type.value
             assert post.subreddit_name == self.subreddits[0]
             assert post.subreddit_id == self.subreddits_id[0]
             assert post.subreddit_tag == f"#{self.subreddits[0]}"
@@ -30,11 +31,10 @@ class TestRedditAPI:
     async def test_get_subreddits_posts(self):
         data = []
         for subreddit in self.subreddits:
-            data.append(
-                await self.api.get_posts(
-                    subreddit=subreddit, post_type=self.post_type, limit=self.limit
-                )
+            res = await self.api.get_posts(
+                subreddit=subreddit, post_type=self.post_type, limit=self.limit
             )
+            data.append(res.data)
         assert isinstance(data, list)
         assert len(data) == len(self.subreddits)
         for subreddit in enumerate(data):
@@ -42,7 +42,7 @@ class TestRedditAPI:
             assert len(subreddit[1]) == self.limit
             for post in enumerate(subreddit[1]):
                 assert isinstance(post[1], Post)
-                assert post[1].post_type == self.post_type.value
+                assert post[1].post_type.value == self.post_type.value
                 subreddit_name = self.subreddits[subreddit[0]]
                 assert post[1].subreddit_name == subreddit_name
                 assert post[1].subreddit_id == self.subreddits_id[subreddit[0]]

@@ -1,8 +1,21 @@
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from enum import Enum
+from typing import Generic, Optional, TypeVar
 
 from aiogram.utils.formatting import Bold, HashTag, TextLink
+
+T = TypeVar("T")
+
+
+@dataclass
+class Result(Generic[T]):
+    data: T
+    kwargs: dict
+
+    @classmethod
+    def init(self, data: T, **kwargs) -> "Result":
+        return Result(data=data, kwargs=kwargs)
 
 
 class LinkType(Enum):
@@ -48,11 +61,11 @@ class SubReddit:
     name: str
     title: str
     link: str
-    lang: str
+    language: str
     id: str
     type: str
     over_18: bool
-    created_at: datetime
+    created_utc: datetime
 
     def __str__(self) -> str:
         over_18 = (
@@ -62,14 +75,14 @@ class SubReddit:
         )
         return (
             Bold("👥Subreddit👥: ").as_html()
-            + TextLink(self.name, self.link).as_html()
+            + TextLink(self.name, url=self.link).as_html()
             + "\n\n"
             + Bold(f"🆔: {self.id}").as_html()
             + "\n\n"
-            + Bold(f"🔍 Title 🔍: {self.title}")
+            + Bold(f"🔍 Title 🔍: {self.title}").as_html()
             + Bold(f"🗣 Language 💬 {self.language}").as_html()
             + "\n\n"
-            + Bold(f"🧩 Type 🧩: {self.type}")
+            + Bold(f"🧩 Type 🧩: {self.type}").as_html()
             + "\n\n"
             + over_18
             + Bold(f"⏳ Created UTC ⏳: {str(self.created_utc)}").as_html()
@@ -93,7 +106,7 @@ class Redditor:
     def __str__(self) -> str:
         return (
             Bold("👤 User 👤: ").as_html()
-            + TextLink(self.name, self.link).as_html()
+            + TextLink(self.name, url=self.link).as_html()
             + "\n\n"
             + Bold(f"🆔: {self.id}").as_html()
             + "\n\n"
@@ -119,8 +132,7 @@ class Post:
     link: str
     id: str
     title: str
-    author: str
-    post_type: str  # Hot, New, Best, Top, Rising, etc.
+    author: str  # Hot, New, Best, Top, Rising, etc.
     subreddit_name: str
     subreddit_id: str
     subreddit_tag: str
@@ -132,7 +144,8 @@ class Post:
     media_only: bool
     over_18: bool
     has_spoiler: bool
-    created_at: datetime
+    created_utc: datetime
+    post_type: Optional[PostType]
 
     def __convert_time(self, time_delta: timedelta):
         seconds = round(time_delta.total_seconds())
@@ -164,7 +177,7 @@ class Post:
             else Bold(f"🌫With spoiler🌫: {self.has_spoiler}\n\n").as_html()
         )
         return (
-            Bold(f"{self.post_type}🔥 from {self.subreddit.name}\n\n").as_html()
+            Bold(f"{self.post_type}🔥 from {self.subreddit_name}\n\n").as_html()
             + Bold("🔍 Title 🔍: ").as_html()
             + TextLink(self.title, url=self.link).as_html()
             + "\n\n"
@@ -177,14 +190,14 @@ class Post:
             + over_18
             + has_spoiler
             + Bold(
-                "⏳ Created UTC ⏳: {created_at} ({time_ago})\n\n".format(
-                    created_at=str(self.created_at),
-                    time_ago=self.__convert_time(datetime.utcnow() - self.created_at),
+                "⏳ Created UTC ⏳: {created_utc} ({time_ago})\n\n".format(
+                    created_utc=str(self.created_utc),
+                    time_ago=self.__convert_time(datetime.utcnow() - self.created_utc),
                 )
             ).as_html()
-            + HashTag(self.subreddit.tag).as_html()
+            + HashTag(self.subreddit_tag).as_html()
             + ", "
-            + HashTag("#" + self.subreddit.id).as_html()
+            + HashTag("#" + self.subreddit_id).as_html()
         )
 
 
