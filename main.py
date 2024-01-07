@@ -9,7 +9,7 @@ from aiogram_dialog import setup_dialogs
 from src.bot.config import Config, get_config
 from src.bot.handlers import routers_list
 from src.bot.service import broadcast
-from src.bot.web.reddit.api import RedditAPI
+from src.web.reddit.api import RedditAPI
 
 
 def setup_logging():
