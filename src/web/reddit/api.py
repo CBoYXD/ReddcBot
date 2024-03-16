@@ -191,25 +191,25 @@ class RedditAPI:
                     reddit_posts = [post["data"] for post in json["data"]["children"]]
                     post_id = kwargs.get("post_id")
                     if not post_id:
-                        return Result[list[Post]].init(
-                            self.__tool_get_posts(
+                        return Result[list[Post]](
+                            data=self.__tool_get_posts(
                                 user_posts=reddit_posts,
                                 subreddit=subreddit,
                                 post_type=post_type,
                             ),
-                            limit_change=limit_change,
+                            kwargs=dict(limit_change=limit_change),
                         )
                     else:
                         for post in reddit_posts:
                             if post["id"] == post_id:
                                 index = reddit_posts.index(post)
-                        return Result[list[Post]].init(
-                            self.__tool_get_posts(
+                        return Result[list[Post]](
+                            data=self.__tool_get_posts(
                                 user_posts=reddit_posts[:index],
                                 subreddit=subreddit,
                                 post_type=post_type,
                             ),
-                            limit_change=limit_change,
+                            kwargs=dict(limit_change=limit_change),
                         )
                 else:
                     return Result[None].init(None)
@@ -257,26 +257,26 @@ class RedditAPI:
                 if json.get("error") is None:
                     data = [post["data"] for post in json["data"]["children"]]
                     if search_type == SearchType.POST:
-                        return Result[list[Post]].init(
-                            self.__tool_get_posts(
+                        return Result[list[Post]](
+                            data=self.__tool_get_posts(
                                 user_posts=data,
                                 post_type=sort_type,
                             ),
-                            limit_change=limit_change,
+                            kwargs=dict(limit_change=limit_change),
                         )
                     elif search_type == SearchType.SUBREDDIT:
-                        return Result[list[SubReddit]].init(
-                            self.__tool_get_subreddits(user_subreddits=data),
-                            limit_change=limit_change,
+                        return Result[list[SubReddit]](
+                            data=self.__tool_get_subreddits(user_subreddits=data),
+                            kwargs=dict(limit_change=limit_change),
                         )
                     else:
-                        return Result[list[Redditor]].init(
-                            self.__tool_get_redditors(user_redditors=data),
-                            limit_change=limit_change,
+                        return Result[list[Redditor]](
+                            data=self.__tool_get_redditors(user_redditors=data),
+                            kwargs=dict(limit_change=limit_change),
                         )
 
                 else:
-                    return Result[None].init(None)
+                    return Result[None](None)
 
     def __str__(self) -> str:  # for tests
         return "Reddit API Object"

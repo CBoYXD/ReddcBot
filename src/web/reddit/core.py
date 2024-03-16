@@ -1,9 +1,11 @@
+from __future__ import annotations
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from enum import Enum
 from typing import Generic, Optional, TypeVar
 
 from aiogram.utils.formatting import Bold, HashTag, TextLink
+
 
 T = TypeVar("T")
 
@@ -13,9 +15,8 @@ class Result(Generic[T]):
     data: T
     kwargs: dict
 
-    @classmethod
-    def init(self, data: T, **kwargs) -> "Result":
-        return Result(data=data, kwargs=kwargs)
+    def init(data: T, **kwargs) -> Result:
+        return Result(data, kwargs)
 
 
 class LinkType(Enum):
