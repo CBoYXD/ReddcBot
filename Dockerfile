@@ -6,6 +6,7 @@ WORKDIR /usr/src/reddc_bot
 
 COPY . /usr/src/reddc_bot
 
-RUN pip install -r /usr/src/reddc_bot/requirements.txt
+RUN pip install --upgrade pip && \
+    pip install --requirement requirements.txt
 
 CMD ["python", "main.py"]

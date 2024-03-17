@@ -6,7 +6,7 @@ from aiogram import Bot, Dispatcher
 from aiogram.enums import ParseMode
 from aiogram_dialog import setup_dialogs
 
-from src.bot.config import Config, get_config
+from src.config import Config, get_config
 from src.bot.handlers import routers_list
 from src.bot.service import broadcast
 from src.web.reddit.api import RedditAPI
@@ -31,12 +31,12 @@ async def on_startup(bot: Bot, admin_id: str) -> None:
 async def main() -> None:
     config: Config = get_config()
     dp = Dispatcher(reddit=RedditAPI())
-    bot = Bot(token=config.bot_token, parse_mode=ParseMode.HTML)
+    bot = Bot(token=config.bot.token, parse_mode=ParseMode.HTML)
     setup_logging()
     dp.include_routers(*routers_list)
     setup_dialogs(dp)
     await bot.delete_webhook(drop_pending_updates=True)
-    await on_startup(bot, config.admin_ids)
+    await on_startup(bot, config.bot.admin_ids)
     await dp.start_polling(bot)
 
 
